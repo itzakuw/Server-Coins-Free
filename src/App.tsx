@@ -85,9 +85,9 @@ export default function App() {
         origin: { y: 0.6 },
         colors: ['#3fb11e', '#4cd125', '#ffffff', '#ffd700']
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error claiming coins:', error);
-      toast.error('An error occurred. Please try again later.');
+      toast.error(error.message || 'An error occurred. Please try again later.');
       setIsSubmitting(false);
       setStep('form');
     }
@@ -270,7 +270,7 @@ export default function App() {
                   </p>
                 </div>
                 <p className="text-[10px] text-gray-400">
-                  Check in-game on {selectedServers.map(s => SERVERS.find(srv => srv.id === s)?.name).join(', ')} in 5-15 minutes.
+                  You Will Receive Coins In 24 Hour's
                 </p>
               </div>
 
